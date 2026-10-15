@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyG2443BRvam5fpx_2sfo4sJ7XHB2SskdDi9rcy9brf2NrgWE6GZhOcR1wCtoVyti0nfQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbQ4CpOvM5d3IyL4tf7fQAbB93sP-MPgDBpvgaf0G58zeLoj9phv2a32hqif51cNIAaQ/exec";
 
 const NEWS = [
   {

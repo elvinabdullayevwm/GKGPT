@@ -41,7 +41,8 @@ const state = {
   lesson: null,
   students: [],
   step: 1,
-  extraOpen: false
+  extraOpen: false,
+  dersId: null
 };
 
 function $(id) { return document.getElementById(id); }
@@ -94,7 +95,6 @@ async function apiGet(params) {
 async function apiPost(payload) {
   const res = await fetch(SCRIPT_URL, {
     method: "POST",
-    // text/plain avoids the browser's cross-origin JSON preflight for Apps Script Web Apps.
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
     cache: "no-store"
@@ -125,7 +125,8 @@ function saveSession() {
       activeApp,
       formValues,
       gunTipi: $("gunTipiSelect")?.value || "auto",
-      extraOpen: state.extraOpen
+      extraOpen: state.extraOpen,
+      dersId: state.dersId
     }));
   } catch (err) {
     console.warn("Sessiya yadda saxlanmadı", err);
@@ -155,6 +156,7 @@ async function restoreSession() {
       if (saved.gunTipi) $("gunTipiSelect").value = saved.gunTipi;
       await loadSchedule();
       if (saved.activeApp === "lesson" && saved.lessonIndex >= 0 && state.lessons[saved.lessonIndex]) {
+        state.dersId = saved.dersId || null;
         startLesson(saved.lessonIndex, true);
         restoreFormValues(saved.formValues);
         state.extraOpen = !!saved.extraOpen;
@@ -323,7 +325,7 @@ async function loadSchedule() {
       <article class="card schedule-item" data-lesson="${i}">
         <h3>${escapeHtml(d.saat || "Saat yoxdur")}</h3>
         <p>${escapeHtml(d.fenn || t.fenn || "")} · ${escapeHtml(d.sinif || "")} ${escapeHtml(d.bolme || "")}</p>
-        <p>${(d.sagirdler || []).length} şagird (10 sətir)</p>
+        <p>${(d.sagirdler || []).length} şagird</p>
       </article>
     `).join("");
   } catch (err) {
@@ -333,6 +335,19 @@ async function loadSchedule() {
 
 function startLesson(index, restoring = false) {
   state.lesson = state.lessons[index];
+  
+  // Sabit DersID yaradılması (əgər bərpa olunmursa və ya yoxdursa)
+  if (!restoring || !state.dersId) {
+    state.dersId = [
+      todaySheetDate(),
+      state.lesson.fenn || state.teacher.fenn || "",
+      state.lesson.sinif || "",
+      state.lesson.bolme || "",
+      state.lesson.saat || "",
+      Math.random().toString(36).substring(2, 7)
+    ].join("|");
+  }
+
   const names = (state.lesson.sagirdler || []).slice(0, 10);
   state.students = names.map(s => typeof s === "string" ? { adSoyad: s, ad: s, soyad: "", ata: "", sinif: state.lesson.sinif || "", bolme: state.lesson.bolme || "" } : {
     adSoyad: s.adSoyad || [s.ad, s.soyad, s.ata].filter(Boolean).join(" "),
@@ -433,7 +448,7 @@ function lessonPayload(action) {
     fenn: state.lesson.fenn || state.teacher.fenn || "",
     sinif: state.lesson.sinif || "",
     bolme: state.lesson.bolme || "",
-    dersId: [todaySheetDate(), state.lesson.fenn || state.teacher.fenn || "", state.lesson.sinif || "", state.lesson.bolme || "", state.lesson.saat || ""].join("|") ,
+    dersId: state.dersId,
     statMovzu: $("statMovzu").value.trim(),
     actMovzu: $("actMovzu").value.trim(),
     elaveNovu: $("elaveNovu").value,
@@ -488,7 +503,7 @@ async function handleRegister(e) {
     showMsg($("registerMsg"), "Müraciət «Müraciətlər» vərəqinə yazıldı.", true);
     form.reset();
   } catch (err) {
-    showMsg($("registerMsg"), err.message + " (Google skript URL-ni yeniləyin)", false);
+    showMsg($("registerMsg"), err.message, false);
   } finally {
     $("registerBtn").disabled = false;
   }
@@ -521,6 +536,7 @@ function bind() {
     state.lesson = null;
     state.lessons = [];
     state.students = [];
+    state.dersId = null;
     try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
     hideApps();
   });
@@ -555,6 +571,7 @@ function bind() {
     $("teacherApp").hidden = false;
     state.lesson = null;
     state.students = [];
+    state.dersId = null;
     toast("Dərs bitdi.");
     saveSession();
     loadSchedule();

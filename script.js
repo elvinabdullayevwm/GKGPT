@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVV0lajaQHJipHuJvEEGA-QJs6vysdn2BOcbdfi7HbEMoL5hL05Sf8pvFoyk0T4xZuiA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkCn73sgNiX_mhNCV8OtEjIwHKRsAgnEmK9BG87BLz_GS2rhyFLCQ-wAJ6QgnQChciCA/exec";
 
 const NEWS = [
   {
@@ -336,7 +336,6 @@ async function loadSchedule() {
 function startLesson(index, restoring = false) {
   state.lesson = state.lessons[index];
   
-  // Sabit DersID yaradılması (təsadüfi simvollar olmadan, təmiz unikal açar)
   if (!restoring || !state.dersId) {
     state.dersId = [
       todaySheetDate(),
@@ -550,6 +549,11 @@ function bind() {
     if (card) startLesson(Number(card.dataset.lesson));
   });
   $("backDashBtn").addEventListener("click", () => {
+    $("lessonApp").hidden = true;
+    $("teacherApp").hidden = false;
+    saveSession();
+  });
+  $("backToDashFromStep1").addEventListener("click", () => {
     $("lessonApp").hidden = true;
     $("teacherApp").hidden = false;
     saveSession();

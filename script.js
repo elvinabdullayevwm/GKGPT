@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7_oiPDljJZbtZ1CadSSC2R_K8Zt9iMtiT6g6zXK60jnTmn63wREneYgRzkx3KP04Hdg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-3ifos6kMJFtA90sbplBps5pgwPSV3ipf_V5eA4rw_FTRWqZzHIRvWi8GUfu2QeSq4A/exec";
 
 const NEWS = [
   {
@@ -169,7 +169,7 @@ async function restoreSession() {
       $("publicSite").hidden = true;
       $("parentApp").hidden = false;
       setLoggedIn(saved.parent.adSoyad || "Valideyn");
-      $("parentMeta").textContent = `${saved.parent.adSoyad || ""} · ${saved.parent.sinif || ""} · ${saved.parent.telefon || ""}`;
+      $("parentMeta").textContent = `${saved.parent.adSoyad} · ${saved.parent.sinif || ""} · ${saved.parent.telefon}`;
       $("parentResults").innerHTML = renderParent(saved.parent);
     }
   } catch (err) {
@@ -336,15 +336,14 @@ async function loadSchedule() {
 function startLesson(index, restoring = false) {
   state.lesson = state.lessons[index];
   
-  // Sabit DersID yaradılması (əgər bərpa olunmursa və ya yoxdursa)
+  // Sabit DersID yaradılması (təsadüfi simvollar olmadan, təmiz unikal açar)
   if (!restoring || !state.dersId) {
     state.dersId = [
       todaySheetDate(),
       state.lesson.fenn || state.teacher.fenn || "",
       state.lesson.sinif || "",
       state.lesson.bolme || "",
-      state.lesson.saat || "",
-      Math.random().toString(36).substring(2, 7)
+      state.lesson.saat || ""
     ].join("|");
   }
 
